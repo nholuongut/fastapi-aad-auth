@@ -1,0 +1,127 @@
+{% extends "fastapi_aad_auth.ui:base.html" %}
+
+{% block CSS %}
+        {{ super() }}
+        <link href="{{static_path}}/css/open-iconic-bootstrap.css" rel="stylesheet">
+{% endblock CSS %}
+
+{% block Content %}
+    {% if containerClass %}
+        <div class='{{containerClass}}'>
+    {% else %}
+        <div class='container'>
+    {% endif %}
+
+        {% block ContentHeader %}
+            <div class="cover-container d-flex h-5 p-3 mx-auto flex-column text-center justify-content-center">
+                <main class="inner-cover">
+                    <p class="lead">
+                        {% if logo %}
+                        {{logo | safe }}
+                        {% endif %}
+                        {% if appname %}
+                        <h1 class="h1">{{appname}}</h1>
+                        {% endif %}
+
+                    </p>
+                </main>
+            </div>
+        {% endblock ContentHeader %}
+        {% block ContentSubHeader %}
+            <div class="row mb-md-3">
+                <h2>Current User</h2>
+            </div>
+        {% endblock ContentSubHeader %}
+        {% block ContentTable %}
+            <div class="row">
+                <table class="table">
+                    <tbody>
+                        <tr class="d-flex">
+                        <th class="col-2" scope="row">Username</th>
+                        <td class="col-10">{{user.username}}</td>
+                        </tr>
+
+                        <tr class="d-flex">
+                        <th class="col-2" scope="row">Name</th>
+                        <td class="col-10">{{user.name}}</td>
+                        </tr>
+
+                        <tr class="d-flex">
+                        <th class="col-2" scope="row">Email</th>
+                        <td class="col-10">{{user.email}}</td>
+                        </tr>
+
+                        <tr class="d-flex">
+                        <th class="col-2" scope="row">Roles</th>
+                        <td class="col-10">{% if user.roles %}{{user.roles|join(", ")}}{% endif %}</td>
+                        </tr>
+
+                        <tr class="d-flex">
+                        <th class="col-2" scope="row">Groups</th>
+                        <td class="col-10">{% if user.groups %}{{user.groups|join(", ")}}{% endif %}</td>
+                        </tr>
+                        <tr class="d-flex bg-success">
+                        <th class="col-2" scope="row">Permissions</th>
+                        <td class="col-10"><i>{% if user.permissions %}{{user.permissions | join("</i>, <i>") | safe}}{% endif %}</i></td>
+                        </tr>
+
+                        <tr class="d-flex">
+                        <th class="col-2" scope="row">Bearer Token</th>
+                        <td class="col-10">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                <button type="button" class="btn btn-success" id="loadToken" data-toggle="button">
+                                    <span class="oi oi-key" title="This token is valid for this application" aria-hidden="true"></span>
+                                </button>
+                                </div>
+                                <input type="text" id="tokenText" class="form-control" value="*********" aria-label="" aria-describedby="token" readonly>
+                            </div>
+                            <span id="expires"></span>
+                        </td>
+                        </tr>
+
+
+
+                    </tbody>
+                </table>
+            </div>
+        {% endblock ContentTable %}
+        {% block ContentFooter %}
+            {% if copyright %}
+                <p class="mt-5 mb-3 lead text-muted">© {{ copyright }}</p>
+            {% endif %}
+            {% if explanation %}
+                <p class="mt-5 mb-3 lead text-muted">{{ explanation }}</p>
+            {% endif %}
+        {% endblock ContentFooter %}
+        </div>
+{% endblock Content %}
+
+{% block BodyScripts %}
+        <script>
+            $(document).ready(function(){
+              $('#tokenText').val('*********');
+              $('#expires').text("");
+              $("#loadToken").click(function(e){
+                if (!e.currentTarget.classList.contains("active")){
+                  $.ajax("{{token_api_path}}?ajax=True").done(function(data){
+                    if (data.redirect) {
+                        data.query_params.redirect = "{{ request.path }}"
+                        login_url = data.redirect+"?"+$.param(data.query_params);
+                        window.location.replace(login_url);
+                    } else {
+                        $('#tokenText').val(data['access_token']);
+                        var expires = new Date();
+                        expires.setSeconds(expires.getSeconds()+data['expires_in']);
+                        $('#expires').text("Expires: "+expires.toString())
+                    }
+                  });
+                  e.currentTarget.className += " active"}
+                else{
+                  $('#tokenText').val('*********');
+                  e.currentTarget.className = e.currentTarget.className.replace(" active", "");
+                  $('#expires').text("")
+                }})});
+
+          </script>
+{% endblock BodyScripts %}

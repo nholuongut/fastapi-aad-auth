@@ -1,0 +1,37 @@
+{% extends "fastapi_aad_auth.ui:base.html" %}
+{% block Content %}
+    {% if containerClass %}
+        <div class='{{containerClass}}'>
+    {% else %}
+        <div class='container'>
+    {% endif %}
+            <div class="cover-container d-flex h-100 p-3 mx-auto flex-column text-center justify-content-center">
+                <main class="inner-cover">
+                {% block ContentHeader %}
+                    <p class="lead">
+                    {% if logo %}
+                        {{logo | safe }}
+                    {% endif %}
+                    {% if appname %}
+                        <h1 class="h1">{{appname}}</h1>
+                    {% endif %}
+                {% endblock ContentHeader %}
+                {% block Login %}
+                        <br><br>
+                        <h4 class="mb-3 font-weight-normal">Please sign in</h4>
+                        {{ login | safe }}
+                    </p>
+                {% endblock Login %}
+                {% block ContentFooter %}
+                    {% if copyright %}
+                        <p class="mt-5 mb-3 lead text-muted">© {{ copyright | safe }}</p>
+                    {% endif %}
+                    {% if explanation %}
+                        <p class="mt-5 mb-3 lead text-muted">{{ explanation | safe }}</p>
+                    {% endif %}
+                {% endblock ContentFooter %}
+
+                </main>
+            </div>
+        </div>
+{% endblock Content %}
